@@ -630,19 +630,19 @@ export function BrandWizard({ profile, setProfile, theme, setTheme, blocks, onFi
     setTimeout(() => document.querySelectorAll(".bw-section .pc")[products.length]?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 60);
   };
 
-  /* A follow-up question from the AI when the answer is too thin to build a store from */
-  const [ask, setAsk] = useState<{ q: string; canSkip: boolean } | null>(null);
-  const draft = async (force = false, skipCheck = false) => {
+  /* A question back from the AI when the answer is gibberish */
+  const [ask, setAsk] = useState<string | null>(null);
+  const draft = async (force = false) => {
     const about = profile.about.trim();
     if (!force && about === draftedFrom) return setStep(2);
     setLoading(true);
     setError("");
     setAsk(null);
     try {
-      const res = await fetch("/api/setup", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ about, skipCheck }) });
+      const res = await fetch("/api/setup", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ about }) });
       const data = await res.json().catch(() => ({}));
       if (data.followUp) {
-        setAsk({ q: data.error, canSkip: data.quality === "too_vague" });
+        setAsk(data.error);
         setTimeout(() => document.getElementById("bw-about")?.focus(), 30);
         return;
       }
@@ -752,12 +752,9 @@ export function BrandWizard({ profile, setProfile, theme, setTheme, blocks, onFi
                 )}
                 {ask && !loading && (
                   <div className="bw-ask" role="status">
-                    <p>{ask.q}</p>
+                    <p>{ask}</p>
                     <span>
                       Add it above and continue.
-                      {ask.canSkip && (
-                        <> <button type="button" onClick={() => draft(true, true)}>Draft anyway</button></>
-                      )}{" "}
                       <button type="button" onClick={() => { setAsk(null); setStep(2); }}>Set up manually</button>
                     </span>
                   </div>

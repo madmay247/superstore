@@ -105,10 +105,10 @@ const schema = {
   properties: {
     input_quality: {
       type: "string",
-      enum: ["ok", "too_vague", "gibberish"],
-      description: "Judge the creator's input first. 'gibberish': random keys, nonsense, or nothing about a person or skill (e.g. 'asdf', 'hello', 'test 123'). 'too_vague': a real topic but too little to build a store around: one or two words, or no idea what they do or who they help (e.g. 'yoga', 'I am a creator'). 'ok': at least a skill or niche plus some sense of who they help or what they do. Short is fine if it's specific.",
+      enum: ["ok", "gibberish"],
+      description: "Judge the creator's input first. 'gibberish' only for random keys or nonsense that names no skill, topic or person at all (e.g. 'asdf', 'hello', 'test 123', 'jjjj'). Anything with a real topic is 'ok', even one word like 'yoga' or 'CFA': draft the best store you can from it.",
     },
-    follow_up: { type: "string", description: "If input_quality isn't 'ok': one short, friendly question (max 140 characters) asking for the missing piece, using their own topic if they gave one (e.g. 'Nice! Do you teach yoga to beginners, or help people with something specific like back pain?'). Empty string when 'ok'." },
+    follow_up: { type: "string", description: "If input_quality is 'gibberish': one short, friendly question (max 140 characters) asking what they do and who they help. Empty string when 'ok'." },
     display_name: { type: "string", description: "The creator's name as they'd show it publicly. Only use a name the creator actually gave in the input, however casually ('Rahul here', 'main Neha hoon', 'this is Arjun' all give a name); it may be combined with their niche or brand (e.g. 'Mayank | Finance'). If they gave no name, return an empty string. Never invent a name or a brand name." },
     store_handle: { type: "string", description: "A short URL handle for their store link: lowercase letters, digits, hyphen or underscore only, max 30 characters, built from the creator's own name and/or niche (e.g. mayank-finance). Return an empty string if they gave no name." },
     bio: { type: "string", description: "Max 110 characters. Outcome-first, first person: who they help, the concrete result those people get, and how (e.g. \"I help CFA Level 1 candidates build a 90-day study plan and pass first time\"). No vague words. No hashtags. Only outcomes the creator's own words support." },
@@ -147,7 +147,7 @@ const schema = {
 
 type Session = { emoji: string; title: string; duration: number; description: string };
 type Draft = {
-  input_quality: "ok" | "too_vague" | "gibberish";
+  input_quality: "ok" | "gibberish";
   follow_up: string;
   display_name: string;
   store_handle: string;
@@ -328,7 +328,7 @@ export async function POST(req: Request) {
   const key = process.env.OPENAI_API_KEY;
   if (!key) return NextResponse.json({ error: "OPENAI_API_KEY is not set" }, { status: 500 });
 
-  const { about, part, field, current, skipCheck } = (await req.json().catch(() => ({}))) as { about?: string; part?: string; field?: string; current?: string; skipCheck?: boolean };
+  const { about, part, field, current } = (await req.json().catch(() => ({}))) as { about?: string; part?: string; field?: string; current?: string };
   const text = (about ?? "").trim().slice(0, ABOUT_MAX);
   if (!text) return NextResponse.json({ error: "Tell us a little about you first" }, { status: 400 });
   /* No letters at all ("1234", "!!!") can't describe anyone; skip the model call */
@@ -341,13 +341,9 @@ export async function POST(req: Request) {
   if (!r.ok) return NextResponse.json({ error: r.error }, { status: r.status });
   const d = r.draft;
 
-  /* Weak input on a full draft: ask one question instead of inventing a store. "Too vague" can be
-     overridden by the creator ("Draft anyway"); gibberish can't. */
-  /* The model's judgement varies run to run, so very short answers (under 4 words) always count as too vague */
-  if (!part && d.input_quality === "ok" && (text.match(/\p{L}+/gu)?.length ?? 0) < 4) d.input_quality = "too_vague";
-  if (!part && d.input_quality !== "ok" && !(skipCheck && d.input_quality === "too_vague")) {
-    const fallback = d.input_quality === "gibberish" ? "We couldn't make sense of that. What do you do, and who do you help?" : "Tell us a bit more: what exactly do you teach or offer, and who is it for?";
-    return NextResponse.json({ error: d.follow_up || fallback, followUp: true, quality: d.input_quality }, { status: 422 });
+  /* Nonsense input on a full draft: ask what they do instead of inventing a store. Any real topic gets drafted. */
+  if (!part && d.input_quality === "gibberish") {
+    return NextResponse.json({ error: d.follow_up || "We couldn't make sense of that. What do you do, and who do you help?", followUp: true, quality: "gibberish" }, { status: 422 });
   }
 
   /* Only trust a follower count if the creator actually typed a number */

@@ -34,7 +34,7 @@ Open http://localhost:3000. Use the reset button in the sidebar to clear the sav
 
 | Path | What it does |
 |---|---|
-| `app/api/setup/route.ts` | The single AI endpoint. It drafts the whole store, or regenerates one part (name, bio, link, or one product's title or description). It asks a follow-up question when the answer is too thin, retries slow or rule-breaking drafts once, and cleans the copy before returning it. The model picks a niche and reads the follower count; the price and its "Why ₹X?" reason come from rules in code. |
+| `app/api/setup/route.ts` | The single AI endpoint. It drafts the whole store, or regenerates one part (name, bio, link, or one product's title or description). It asks what the creator does if the answer is gibberish, retries slow or rule-breaking drafts once, and cleans the copy before returning it. The model picks a niche and reads the follower count; the price and its "Why ₹X?" reason come from rules in code. |
 | `app/api/stores/[slug]/route.ts` | Publish (PUT), read (GET) and unpublish (DELETE). The first browser to publish a link claims it with a random edit token; only that token can change it afterwards. |
 | `app/page.tsx`, `app/store/StoreModals.tsx` | The editor: the setup wizard, review screen with live phone preview, product editing and per-field regenerate. |
 | `app/store/shared.tsx` | `StoreBlocks`, the product list used by both the editor preview and the public page, so they always match. |
