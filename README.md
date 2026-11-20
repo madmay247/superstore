@@ -1,9 +1,9 @@
-# AI Storefront Generator
+# SuperStore
 
 A creator writes two or three lines about themselves. The AI drafts their store: bio, store link, a free lead magnet, a ₹499 discovery call, a premium 1:1 session priced for their niche, and a community if they mention one. They review and edit it, regenerate any single field, and publish it to a public link they can share on their phone.
 
 - **Live:** https://sppm-three.vercel.app
-- **Decision doc:** [docs/decision-doc.pdf](docs/decision-doc.pdf)
+- **Decision doc:** [docs/superstore.pdf](docs/superstore.pdf)
 
 ## Stack
 
