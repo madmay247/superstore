@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Storefront Generator: Decision Doc</title>
+<style>
+  @page { size: A4; margin: 11mm 13mm; }
+  :root { --ink: #16161a; --muted: #5d5d66; --line: #e3e3e8; --accent: #5b3df5; --soft: #f3f1ff; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 9.4pt/1.4 -apple-system, "Helvetica Neue", Arial, sans-serif; color: var(--ink); background: #fff; }
+  main { max-width: 780px; margin: 0 auto; padding: 16px; }
+  h1 { font-size: 19pt; margin: 0 0 2px; letter-spacing: -.01em; }
+  .sub { color: var(--muted); margin: 0 0 12px; }
+  h2 { font-size: 11pt; margin: 11px 0 4px; padding-bottom: 3px; border-bottom: 1px solid var(--line); break-after: avoid; }
+  h3 { font-size: 10pt; margin: 9px 0 2px; }
+  p { margin: 0 0 6px; }
+  ul { margin: 0 0 6px; padding-left: 17px; }
+  li { margin: 0 0 2px; }
+  b { font-weight: 650; }
+  .tldr { background: var(--soft); border-left: 3px solid var(--accent); padding: 8px 11px; margin: 0 0 6px; }
+  table { width: 100%; border-collapse: collapse; margin: 3px 0 6px; font-size: 8.9pt; }
+  th, td { text-align: left; vertical-align: top; padding: 3px 6px; border-bottom: 1px solid var(--line); }
+  th { background: #f6f6f8; font-weight: 650; }
+  figure { margin: 6px 0 10px; break-inside: avoid; }
+  figcaption { font-size: 8.8pt; color: var(--muted); margin-top: 3px; }
+  svg { width: 100%; height: auto; display: block; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .muted { color: var(--muted); }
+  code { font: 8.8pt ui-monospace, Menlo, monospace; background: #f4f4f6; padding: 0 3px; border-radius: 3px; }
+  .avoid { break-inside: avoid; }
+  @media (max-width: 600px) { .two { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<main>
+
+<h1>AI Storefront Generator</h1>
+<p class="sub">Decision doc · SuperProfile PM take-home · Live: <code>&lt;LIVE_URL&gt;</code> · Repo: <code>&lt;REPO_URL&gt;</code></p>
+
+<div class="tldr">
+<b>In one line:</b> a creator writes two or three sentences about themselves and gets a store they can sell from today: a bio, a free lead magnet, a ₹499 discovery call and a premium 1:1 priced for their niche. They review it on one screen with a live phone preview, change or regenerate any field, and publish to a shareable link. The bet is that the shortest path to a <i>first sale</i> is selling the creator's time, which already exists, not a course they haven't made yet.
+</div>
+
+<h2>1. The problem and what I assumed</h2>
+<p>The brief names three unknowns: what to sell, how to price it, how to write it. Underneath them is a fourth that I think causes most of the stalling: <b>the creator has nothing ready to sell.</b> An AI can write a beautiful listing for a "30-day fat-loss course", but if the course doesn't exist the creator can't publish it, so the store stays empty. I designed around products a creator can deliver the day they publish.</p>
+<ul>
+  <li><b>Assumed:</b> the creator is on a phone, in a hurry, and will accept a good draft rather than craft one. So the AI fills everything and the creator's job is to review, not to write.</li>
+  <li><b>Assumed:</b> most new creators have expertise and an audience but no product inventory. 1:1 time and a free download are the only things they can sell on day one.</li>
+  <li><b>Assumed:</b> trust matters more than cleverness. A store that invents a credential ("certified by…") or a result ("500+ clients") is worse than a plain one, because the creator either deletes it or gets caught out by followers.</li>
+  <li><b>Persona narrowed:</b> I treat the primary and secondary personas as one flow. Both end up writing a short description (see decision 1), so the only difference is how much they have to say about their audience.</li>
+</ul>
+
+<h2>2. The flow</h2>
+<figure>
+<svg viewBox="0 -10 760 160" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="11">
+  <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5d5d66"/></marker></defs>
+  <g stroke="#5b3df5" stroke-width="1.4" fill="#f3f1ff">
+    <rect x="4" y="30" width="118" height="58" rx="9"/>
+    <rect x="160" y="30" width="128" height="58" rx="9"/>
+    <rect x="326" y="18" width="150" height="82" rx="9"/>
+    <rect x="514" y="30" width="110" height="58" rx="9"/>
+    <rect x="652" y="30" width="104" height="58" rx="9"/>
+  </g>
+  <g fill="#16161a" text-anchor="middle">
+    <text x="63" y="54" font-weight="700">1. Tell us</text><text x="63" y="70">2–3 lines about you</text>
+    <text x="224" y="54" font-weight="700">2. AI drafts</text><text x="224" y="70">~5–8 s, progress lines</text>
+    <text x="401" y="40" font-weight="700">3. Review screen</text><text x="401" y="56">edit any field · ↻ per field</text><text x="401" y="71">live phone preview · theme</text><text x="401" y="86">socials incl. Instagram</text>
+    <text x="569" y="54" font-weight="700">4. Publish</text><text x="569" y="70">link claimed</text>
+    <text x="704" y="54" font-weight="700">5. Share</text><text x="704" y="70">/your-name</text>
+  </g>
+  <g stroke="#5d5d66" stroke-width="1.3" fill="none" marker-end="url(#a)">
+    <path d="M122 59 H158"/><path d="M288 59 H324"/><path d="M476 59 H512"/><path d="M624 59 H650"/>
+    <path d="M401 100 V128 H63 V90"/>
+  </g>
+  <text x="232" y="142" fill="#5d5d66" text-anchor="middle">"Regenerate" goes back to step 1 with the answer kept</text>
+  <g stroke="#c0392b" stroke-width="1.2" fill="none" stroke-dasharray="3 3" marker-end="url(#a)"><path d="M224 30 V8 H401 V16"/></g>
+  <text x="312" y="6" fill="#c0392b" text-anchor="middle" font-size="10">AI fails → "Set up manually" (blank review screen)</text>
+</svg>
+<figcaption>Two screens, one decision point. Required fields are checked at Publish; a product missing something (e.g. the lead-magnet file the AI can't create) stays offline instead of blocking the store.</figcaption>
+</figure>
+
+<div class="two avoid">
+<figure>
+<svg viewBox="0 0 360 210" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="10">
+  <rect x="2" y="2" width="356" height="206" rx="10" fill="#fff" stroke="#16161a" stroke-width="1.3"/>
+  <text x="14" y="22" font-weight="700" font-size="11">Chosen: review screen + live preview</text>
+  <rect x="14" y="32" width="200" height="164" rx="6" fill="#f6f6f8"/>
+  <g fill="#16161a"><text x="22" y="48">Name   [Priya | Fitness      ] ↻</text><text x="22" y="64">Bio    [I help working women…] ↻</text><text x="22" y="80">Link   host/[priya-fitness   ] ↻</text></g>
+  <g fill="#fff" stroke="#d0d0d8"><rect x="22" y="90" width="184" height="22" rx="4"/><rect x="22" y="116" width="184" height="22" rx="4"/><rect x="22" y="142" width="184" height="22" rx="4"/></g>
+  <g fill="#16161a"><text x="30" y="105">📂 Free 7-day home plan · Free  ▾</text><text x="30" y="131">👋 Discovery call · 30 min · ₹499 ▾</text><text x="30" y="157">🎯 1:1 coaching · 60 min · ₹2,999 ▾</text></g>
+  <rect x="140" y="172" width="66" height="18" rx="9" fill="#111"/><text x="173" y="185" fill="#fff" text-anchor="middle">Publish</text>
+  <rect x="236" y="32" width="108" height="164" rx="12" fill="#1c3faa"/>
+  <circle cx="290" cy="58" r="13" fill="#fff" opacity=".9"/>
+  <g fill="#fff" opacity=".9"><rect x="246" y="86" width="88" height="18" rx="4"/><rect x="246" y="108" width="88" height="18" rx="4"/><rect x="246" y="130" width="88" height="18" rx="4"/></g>
+  <text x="290" y="186" fill="#fff" text-anchor="middle" font-size="9">updates as you type</text>
+</svg>
+<figcaption>Everything the creator owns is on one screen, and they see exactly what a buyer will see. On a phone, the preview opens from a button.</figcaption>
+</figure>
+<figure>
+<svg viewBox="0 0 360 210" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="10">
+  <rect x="2" y="2" width="356" height="206" rx="10" fill="#fff" stroke="#16161a" stroke-width="1.3" stroke-dasharray="4 3"/>
+  <text x="14" y="22" font-weight="700" font-size="11">Rejected: chat-style builder</text>
+  <rect x="14" y="34" width="210" height="26" rx="10" fill="#f3f1ff"/><text x="24" y="51">AI: What do you want to sell first?</text>
+  <rect x="136" y="66" width="208" height="26" rx="10" fill="#e9e9ee"/><text x="146" y="83">Me: umm… coaching? not sure</text>
+  <rect x="14" y="98" width="230" height="26" rx="10" fill="#f3f1ff"/><text x="24" y="115">AI: Great! What price feels right?</text>
+  <rect x="136" y="130" width="208" height="26" rx="10" fill="#e9e9ee"/><text x="146" y="147">Me: no idea, what do others charge</text>
+  <rect x="14" y="164" width="330" height="30" rx="6" fill="#fff" stroke="#d0d0d8"/><text x="24" y="183" fill="#5d5d66">Type a message…           (store appears at the end)</text>
+</svg>
+<figcaption>It feels "AI-native", but it asks the creator the exact questions the brief says they can't answer, takes 6–10 turns of typing on a phone, and hides the result until the end. Editing one product later means another conversation.</figcaption>
+</figure>
+</div>
+<p class="muted">Also considered: <b>publishing straight after generation, with no review.</b> Fastest to a live link, but prices go live unseen and the creator never reads their own store. One review screen costs about a minute and makes it theirs.</p>
+
+<h2>3. Key decisions and trade-offs</h2>
+<table>
+<tr><th style="width:27%">Decision</th><th>Why</th><th style="width:27%">What it costs</th></tr>
+<tr><td><b>A short description is the main input; the Instagram handle is a link on the page</b></td><td>Instagram blocks scraping and forbids it in its terms; the official API needs a business account, the creator's login and Meta app review. A description also serves the secondary persona with the same flow, and tells the AI what the creator <i>wants</i> to sell, which captions often don't.</td><td>No real profile signals (follower count, post themes). The creator has to type 2–3 lines.</td></tr>
+<tr><td><b>A fixed product ladder:</b> free lead magnet → ₹499 discovery call → premium 1:1, plus a community only if the creator mentions one</td><td>Every item can be sold the day the store goes live: calls need only a calendar, and the free file grows the creator's audience list. It also mirrors SuperProfile's own product types, so it maps to real backend objects. Fixed slots mean the AI fills a known shape instead of inventing formats.</td><td>No ebook, course or template pack generated. For a large audience, 1:1 doesn't scale (see next steps).</td></tr>
+<tr><td><b>The AI picks a niche; the price comes from a table in code</b></td><td>LLM prices drift between runs (₹799, then ₹2,500) and can't be explained. A table of 11 niches (₹1,999 for hobbies up to ₹4,999 for finance and business) is consistent, easy to tune with real sales data, and never made up. ₹499 for the discovery call is impulse-friendly but filters out time-wasters.</td><td>Ignores audience size and the creator's seniority. No "why this price" shown yet.</td></tr>
+<tr><td><b>Community only when the creator says so</b></td><td>The model is told to return nothing unless the description mentions a group, and the server double-checks with a keyword match. An empty Telegram group on day one hurts credibility.</td><td>Misses creators who'd happily start one.</td></tr>
+<tr><td><b>Regenerate per field, not just the whole page</b></td><td>Creators usually like most of the draft and dislike one line. Each field has its own ↻, which sends the current text and asks for a clearly different take. "Regenerate" at the bottom redoes everything.</td><td>Each regenerate is a full model call (simple, slightly wasteful).</td></tr>
+<tr><td><b>No login; an edit token in the browser</b></td><td>Sign-up before value is where creators drop off. The first browser to publish a link claims it with a random token; only that token can change or remove it.</td><td>Clearing browser data or switching phones loses edit access.</td></tr>
+<tr><td><b>Preview and public page share one component</b></td><td>What the creator sees while editing is exactly what a buyer gets: tap a product, read the description, open its page, press "Book now". Link-preview tags make a WhatsApp share show the creator's name and bio.</td><td>None worth noting.</td></tr>
+</table>
+
+<h2>4. What I deliberately did not build</h2>
+<ul>
+  <li><b>Instagram scraping:</b> against Instagram's terms and unreliable; covered above.</li>
+  <li><b>Payments, checkout and booking calendars:</b> the brief says they're optional, and SuperProfile already has them. The buttons lead to the product page, which is where they'd plug in.</li>
+  <li><b>Accounts:</b> they would slow the first session, which is what this product exists to speed up.</li>
+  <li><b>Hindi / Hinglish output:</b> high value for this audience, but needs a set of test cases to check quality. First thing in the next two weeks.</li>
+  <li><b>Courses, ebooks and AI-made files:</b> the creator can't sell what doesn't exist yet. Generating a whole ebook would mean low-quality content under their name.</li>
+  <li><b>Analytics:</b> useful after there is traffic; it doesn't help a creator get to their first publish.</li>
+</ul>
+
+<h2>5. How the AI part works</h2>
+<ul>
+  <li><b>One endpoint, one call:</b> <code>gpt-4o-mini</code> at temperature 0.7, chosen for speed (a draft in a few seconds) and cost. The output is <b>strict JSON schema</b>, so the model can only return the exact fields the page needs: name, link, bio, niche (from a fixed list), the lead magnet, two sessions with durations from allowed values, and the community or nothing.</li>
+  <li><b>Prompt:</b> the model writes as a direct-response copywriter in the creator's own voice, outcome first. Each field carries its own rules in the schema: bio under 110 characters; descriptions open with the buyer's result, then three "•" lines of exactly what they get, then who it's for. Vague words ("journey", "unlock", "guidance") are banned.</li>
+  <li><b>Quality control:</b> never invent a name, credential, number, testimonial or result. If no name is given, the name is left blank and the creator fills it in. Prices are set in code, not by the model. Community is checked twice. Publishing is blocked until each live product has its required fields.</li>
+  <li><b>Failure handling:</b> empty input can't be submitted; long input is capped at 500 characters; a failed or refused model call shows a plain message plus a <b>"Set up manually"</b> button that opens the same review screen with blank products, so there's never a dead end. A failed per-field regenerate keeps the old text and shows an error under it.</li>
+  <li><b>Known gaps:</b> no timeout or automatic retry on the model call yet, and gibberish input ("asdf") isn't detected before drafting. Both are on the two-week list.</li>
+</ul>
+
+<h2>6. Success metrics</h2>
+<table>
+<tr><th style="width:30%">Metric</th><th style="width:22%">Target</th><th>How to measure</th></tr>
+<tr><td><b>Primary: share of new sign-ups who publish a store with at least one paid product in their first session</b></td><td>From an assumed ~20% today to <b>40%</b> (2×)</td><td>A/B test on new sign-ups: half get this flow, half get today's empty store. Log <code>setup_started</code>, <code>draft_generated</code>, <code>store_published</code> with a session ID. Read after two weeks; I'd ask the team for the real baseline first.</td></tr>
+<tr><td><b>Secondary: median time from sign-up to published store</b></td><td><b>Under 5 minutes</b></td><td>Time between <code>signup</code> and <code>store_published</code> in the same events.</td></tr>
+<tr><td><b>Guardrail: first sale within 14 days</b></td><td>Not lower than the control group</td><td>Checks that faster publishing doesn't just produce more empty stores. Also track how much of the AI text survives unedited, as a signal of draft quality.</td></tr>
+</table>
+
+<h2>7. Launch thought</h2>
+<p>Ship it inside onboarding as the default for 10% of new sign-ups, with "Set up myself" one tap away, and grow the share as the publish rate holds. Outside the product: short Reels showing "Instagram bio to store in 60 seconds" in English and Hinglish, and the WhatsApp preview card on every shared store as free distribution ("Made with SuperProfile" on the public page).</p>
+
+<h2>8. With two more weeks</h2>
+<ul>
+  <li><b>Hindi and Hinglish output</b>, with a set of 30 test personas across niches, scored by hand before each prompt change.</li>
+  <li><b>Pricing that uses audience size and experience</b>, with a one-line "why ₹2,999?" under each price.</li>
+  <li><b>A low-price digital product slot</b> (ebook or template pack, ₹199–999) with an AI-drafted outline the creator fills in, so larger audiences have something scalable.</li>
+  <li><b>Reliability:</b> model timeout with one retry, gibberish and one-word input detection that asks a follow-up question, and per-creator rate limits.</li>
+  <li><b>Instagram via the official API</b> for creators with business accounts, feeding bio and recent captions into the prompt.</li>
+  <li><b>Views and clicks</b> on the public page.</li>
+</ul>
+
+<h2>9. How I used AI coding tools</h2>
+<p>I built this with <b>Claude Code</b>. I decided the flow, the product ladder and the pricing approach myself, then used Claude Code to write and refactor components, tighten the prompt and schema against sample creator descriptions, and review the code for bugs (for example, it found the editor preview and public page had drifted apart, which led to the shared component). Starting point: a dashboard layout modelled on SuperProfile's own creator dashboard, so the flow would feel familiar to its users. No UI kit; icons from lucide-react.</p>
+
+</main>
+</body>
+</html>

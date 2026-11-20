@@ -1,0 +1,115 @@
+:root {
+  --sb: #0c1014;
+  --sb-active: #1b232d;
+  --page: #eff2f7;
+  --ink: #0f0f0f;
+  --text: #4f4f4f;
+  --muted: #808080;
+  --line: #e5e5e5;
+  --blue: #1774ff;
+  --sb-w: 196px;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  font-family: var(--font-hind), "Hind Madurai", Poppins, -apple-system, system-ui, "Segoe UI", sans-serif;
+  color: var(--text);
+  background: var(--page);
+  -webkit-font-smoothing: antialiased;
+}
+button { font: inherit; cursor: pointer; border: 0; background: none; color: inherit; }
+h1, h2, h3, p { margin: 0; }
+a { cursor: pointer; text-decoration: none; color: inherit; }
+/* Not actually clickable: disabled buttons, links with no destination, and buttons with no action yet */
+button:disabled, a:not([href]), a[href="#"], .sb-plan { cursor: default; }
+.muted { color: var(--muted); }
+
+.shell { display: flex; flex-direction: column; min-height: 100vh; min-height: 100dvh; }
+:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+::selection { background: #cfe1ff; color: var(--ink); }
+button, a, input, textarea, select { -webkit-tap-highlight-color: transparent; }
+button { touch-action: manipulation; }
+
+/* ---------- Sidebar ---------- */
+.sb-wrap {
+  position: fixed; inset: 0; z-index: 40; visibility: hidden; background: rgba(8, 12, 18, 0);
+  transition: background .25s, visibility 0s .28s;
+}
+.sb-wrap.open { visibility: visible; background: rgba(8, 12, 18, 0.55); transition: background .25s; }
+.sidebar {
+  height: 100%; width: min(84vw, 320px); background: var(--sb); display: flex; flex-direction: column;
+  color: rgba(255, 255, 255, 0.7); font-size: 15px; padding-top: env(safe-area-inset-top);
+  transform: translateX(-100%); transition: transform .28s cubic-bezier(.22, 1, .36, 1);
+}
+.sb-wrap.open .sidebar { transform: none; }
+.sb-close { display: grid; place-items: center; width: 44px; height: 44px; margin-left: auto; border-radius: 50%; color: rgba(255,255,255,.8); }
+.sb-close:active { background: rgba(255,255,255,.08); }
+.sb-reset { display: flex; align-items: center; gap: 13px; width: 100%; height: 48px; padding: 0 28px; font-size: 14px; color: rgba(255,255,255,.6); border-top: 1px solid rgba(255,255,255,.07); }
+.sb-reset:active { background: rgba(255,255,255,.05); }
+.sb-top { display: flex; align-items: center; padding: 0 8px 0 24px; height: 64px; flex-shrink: 0; }
+.logo { display: flex; align-items: center; gap: 6px; color: #fff; font-size: 21px; letter-spacing: -0.2px; }
+.logo b { font-weight: 700; }
+.logo span { font-weight: 400; }
+.sb-scroll { flex: 1; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; }
+.sb-item {
+  display: flex; align-items: center; gap: 13px; margin: 0 12px 6px; padding: 8px 16px; border-radius: 999px;
+  color: rgba(255, 255, 255, 0.7); height: 48px; transition: background .15s;
+}
+.sb-item:hover { background: rgba(255, 255, 255, 0.05); }
+.sb-item.active { background: var(--sb-active); color: #fff; font-weight: 600; }
+.sb-item.app { height: 48px; margin-bottom: 6px; }
+.app-ic { width: 18px; height: 18px; border-radius: 5px; display: grid; place-items: center; flex-shrink: 0; }
+.sb-bottom { flex-shrink: 0; }
+.sb-plan-wrap { padding: 8px 8px; background: var(--sb); }
+.sb-plan {
+  width: 100%; height: 36px; display: flex; align-items: center; justify-content: space-between;
+  padding: 0 7px 0 10px; border-radius: 8px; font-size: 13px; font-weight: 500; color: rgba(255, 255, 255, 0.86);
+  background: rgba(35, 121, 79, 0.16); border: 1px solid rgba(119, 207, 164, 0.22);
+}
+.sb-plan-up { width: 20px; height: 20px; border-radius: 50%; background: #23a05f; color: #fff; display: grid; place-items: center; }
+.sb-user { display: flex; align-items: center; gap: 8px; padding: 16px 28px max(20px, env(safe-area-inset-bottom)); color: #fff; }
+.avatar {
+  width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: 10px; font-weight: 700;
+  background: linear-gradient(135deg, #6b7a90, #39475a); color: #fff;
+}
+.sb-user-name { flex: 1; }
+
+/* Mobile top bar: in flow, sticky, safe-area aware */
+.mobile-bar {
+  display: flex; align-items: center; gap: 4px; position: sticky; top: 0; z-index: 25;
+  height: calc(56px + env(safe-area-inset-top)); padding: env(safe-area-inset-top) max(8px, env(safe-area-inset-right)) 0 max(8px, env(safe-area-inset-left));
+  background: var(--sb); color: #fff;
+}
+.mobile-bar > button { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; }
+.mobile-bar > button:active { background: rgba(255,255,255,.1); }
+.mobile-bar .logo { font-size: 18px; }
+
+/* ---------- Main ---------- */
+.main { position: relative; flex: 1; min-width: 0; background: var(--page); }
+.phone { width: 167px; height: 318px; border-radius: 10px; overflow: visible; background: #fff; position: relative; box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+.day { flex: 1; border: 1px solid #eee; border-radius: 3px; display: flex; flex-direction: column; align-items: center; padding: 3px 0; font-size: 5px; color: #777; }
+.day b { font-size: 5.5px; color: #222; margin: 1px 0; }
+.day em { font-style: normal; color: #3aa76d; font-size: 4.5px; }
+
+.chat-fab {
+  position: fixed; right: 16px; bottom: max(16px, env(safe-area-inset-bottom)); width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; color: #fff;
+  background: linear-gradient(135deg, #3d6fd8, #4a59c8); box-shadow: 0 6px 18px rgba(40, 70, 160, 0.35); z-index: 20;
+}
+
+/* ---------- Desktop (mobile-first base above) ---------- */
+@media (min-width: 901px) {
+  .shell { flex-direction: row; }
+  .sb-wrap { inset: 0 auto 0 0; width: var(--sb-w); visibility: visible; background: none; transition: none; }
+  .sidebar { width: var(--sb-w); transform: none; transition: none; padding-top: 0; font-size: 14px; }
+  .sb-top { height: 80px; padding: 20px 24px 0; align-items: flex-start; }
+  .sb-close, .sb-reset, .mobile-bar { display: none; }
+  .sb-item { height: 40px; margin: 0 16px 8px; }
+  .sb-item.app { height: 37px; margin-bottom: 8px; }
+  .sb-user { padding: 16px 28px 20px; }
+  .main { margin-left: var(--sb-w); }
+  .chat-fab { right: 36px; bottom: 36px; width: 60px; height: 60px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sb-wrap, .sidebar { transition: none; }
+}
