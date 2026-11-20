@@ -6,7 +6,7 @@
 <title>SuperStore: Decision Doc</title>
 <style>
   @page { size: A4; margin: 11mm 13mm; }
-  :root { --ink: #16161a; --muted: #5d5d66; --line: #e3e3e8; --accent: #5b3df5; --soft: #f3f1ff; }
+  :root { --ink: #16161a; --muted: #5d5d66; --line: #e3e3e8; --accent: #0f6b4f; --soft: #edf5f0; --cream: #faf7f0; }
   * { box-sizing: border-box; }
   body { margin: 0; font: 9.4pt/1.4 -apple-system, "Helvetica Neue", Arial, sans-serif; color: var(--ink); background: #fff; }
   main { max-width: 780px; margin: 0 auto; padding: 16px; }
@@ -18,7 +18,11 @@
   ul { margin: 0 0 6px; padding-left: 17px; }
   li { margin: 0 0 2px; }
   b { font-weight: 650; }
-  .tldr { background: var(--soft); border-left: 3px solid var(--accent); padding: 8px 11px; margin: 0 0 6px; }
+  .tldr { background: var(--cream); border: 1px solid #e8e1d0; border-radius: 8px; padding: 9px 12px; margin: 0 0 6px; }
+  h1 { color: var(--accent); }
+  h2 { color: #0b4f3a; border-bottom-color: #d6e6dc; }
+  th { background: var(--soft) !important; color: #0b4f3a; }
+  a { color: var(--accent); }
   table { width: 100%; border-collapse: collapse; margin: 3px 0 6px; font-size: 8.9pt; }
   th, td { text-align: left; vertical-align: top; padding: 3px 6px; border-bottom: 1px solid var(--line); }
   th { background: #f6f6f8; font-weight: 650; }
@@ -55,7 +59,7 @@
 <figure>
 <svg viewBox="0 -10 760 160" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="11">
   <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5d5d66"/></marker></defs>
-  <g stroke="#5b3df5" stroke-width="1.4" fill="#f3f1ff">
+  <g stroke="#0f6b4f" stroke-width="1.4" fill="#edf5f0">
     <rect x="4" y="30" width="118" height="58" rx="9"/>
     <rect x="160" y="30" width="128" height="58" rx="9"/>
     <rect x="326" y="18" width="150" height="82" rx="9"/>
@@ -90,7 +94,7 @@
   <g fill="#fff" stroke="#d0d0d8"><rect x="22" y="90" width="184" height="22" rx="4"/><rect x="22" y="116" width="184" height="22" rx="4"/><rect x="22" y="142" width="184" height="22" rx="4"/></g>
   <g fill="#16161a"><text x="30" y="105">📂 Free 7-day home plan · Free  ▾</text><text x="30" y="131">👋 Discovery call · 30 min · ₹499 ▾</text><text x="30" y="157">🎯 1:1 coaching · 60 min · ₹2,999 ▾</text></g>
   <rect x="140" y="172" width="66" height="18" rx="9" fill="#111"/><text x="173" y="185" fill="#fff" text-anchor="middle">Publish</text>
-  <rect x="236" y="32" width="108" height="164" rx="12" fill="#1c3faa"/>
+  <rect x="236" y="32" width="108" height="164" rx="12" fill="#0f6b4f"/>
   <circle cx="290" cy="58" r="13" fill="#fff" opacity=".9"/>
   <g fill="#fff" opacity=".9"><rect x="246" y="86" width="88" height="18" rx="4"/><rect x="246" y="108" width="88" height="18" rx="4"/><rect x="246" y="130" width="88" height="18" rx="4"/></g>
   <text x="290" y="186" fill="#fff" text-anchor="middle" font-size="9">updates as you type</text>
@@ -101,9 +105,9 @@
 <svg viewBox="0 0 360 210" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="10">
   <rect x="2" y="2" width="356" height="206" rx="10" fill="#fff" stroke="#16161a" stroke-width="1.3" stroke-dasharray="4 3"/>
   <text x="14" y="22" font-weight="700" font-size="11">Rejected: chat-style builder</text>
-  <rect x="14" y="34" width="210" height="26" rx="10" fill="#f3f1ff"/><text x="24" y="51">AI: What do you want to sell first?</text>
+  <rect x="14" y="34" width="210" height="26" rx="10" fill="#edf5f0"/><text x="24" y="51">AI: What do you want to sell first?</text>
   <rect x="136" y="66" width="208" height="26" rx="10" fill="#e9e9ee"/><text x="146" y="83">Me: umm… coaching? not sure</text>
-  <rect x="14" y="98" width="230" height="26" rx="10" fill="#f3f1ff"/><text x="24" y="115">AI: Great! What price feels right?</text>
+  <rect x="14" y="98" width="230" height="26" rx="10" fill="#edf5f0"/><text x="24" y="115">AI: Great! What price feels right?</text>
   <rect x="136" y="130" width="208" height="26" rx="10" fill="#e9e9ee"/><text x="146" y="147">Me: no idea, what do others charge</text>
   <rect x="14" y="164" width="330" height="30" rx="6" fill="#fff" stroke="#d0d0d8"/><text x="24" y="183" fill="#5d5d66">Type a message…           (store appears at the end)</text>
 </svg>
@@ -115,7 +119,7 @@
 <h2>3. Key decisions and trade-offs</h2>
 <table>
 <tr><th style="width:27%">Decision</th><th>Why</th><th style="width:27%">What it costs</th></tr>
-<tr><td><b>A short description is the main input; the Instagram handle is a link on the page</b></td><td>Instagram blocks scraping and forbids it in its terms; the official API needs a business account, the creator's login and Meta app review. A description also serves the secondary persona with the same flow, and tells the AI what the creator <i>wants</i> to sell, which captions often don't.</td><td>No real profile signals (follower count, post themes). The creator has to type 2–3 lines.</td></tr>
+<tr><td><b>A short description is the main input; the Instagram handle is a link on the page</b></td><td>Scraping is against Instagram's terms. Meta's Business Discovery API can read a professional account's bio, follower count and recent captions from just the handle, but it needs Advanced Access through app review (days to weeks) and doesn't work for personal accounts. That didn't fit the timebox. A description also serves the secondary persona with the same flow, and tells the AI what the creator <i>wants</i> to sell, which captions often don't.</td><td>No real profile signals (follower count, post themes). The creator has to type 2–3 lines.</td></tr>
 <tr><td><b>A fixed product ladder:</b> free lead magnet → ₹499 discovery call → premium 1:1, plus a community only if the creator mentions one</td><td>Every item can be sold the day the store goes live: calls need only a calendar, and the free file grows the creator's audience list. It also mirrors SuperProfile's own product types, so it maps to real backend objects. Fixed slots mean the AI fills a known shape instead of inventing formats.</td><td>No ebook, course or template pack generated. For a large audience, 1:1 doesn't scale (see next steps).</td></tr>
 <tr><td><b>The AI picks a niche; the price comes from a table in code</b></td><td>LLM prices drift between runs (₹799, then ₹2,500) and can't be explained. A table of 11 niches (₹1,999 for hobbies up to ₹4,999 for finance and business) is consistent, easy to tune with real sales data, and never made up. ₹499 for the discovery call is impulse-friendly but filters out time-wasters.</td><td>Ignores audience size and the creator's seniority. No "why this price" shown yet.</td></tr>
 <tr><td><b>Community only when the creator says so</b></td><td>The model is told to return nothing unless the description mentions a group, and the server double-checks with a keyword match. An empty Telegram group on day one hurts credibility.</td><td>Misses creators who'd happily start one.</td></tr>
@@ -126,7 +130,7 @@
 
 <h2>4. What I deliberately did not build</h2>
 <ul>
-  <li><b>Instagram scraping:</b> against Instagram's terms and unreliable; covered above.</li>
+  <li><b>Reading Instagram profiles:</b> scraping is against Instagram's terms, and the official route (Business Discovery) needs Meta app review; covered above.</li>
   <li><b>Payments, checkout and booking calendars:</b> the brief says they're optional, and SuperProfile already has them. The buttons lead to the product page, which is where they'd plug in.</li>
   <li><b>Accounts:</b> they would slow the first session, which is what this product exists to speed up.</li>
   <li><b>Hindi / Hinglish output:</b> high value for this audience, but needs a set of test cases to check quality. First thing in the next two weeks.</li>
@@ -160,7 +164,7 @@
   <li><b>Pricing that uses audience size and experience</b>, with a one-line "why ₹2,999?" under each price.</li>
   <li><b>A low-price digital product slot</b> (ebook or template pack, ₹199–999) with an AI-drafted outline the creator fills in, so larger audiences have something scalable.</li>
   <li><b>Reliability:</b> model timeout with one retry, gibberish and one-word input detection that asks a follow-up question, and per-creator rate limits.</li>
-  <li><b>Instagram via the official API</b> for creators with business accounts, feeding bio and recent captions into the prompt.</li>
+  <li><b>Instagram handle as input via Business Discovery:</b> apply for Advanced Access, read the bio, follower count and recent captions from the handle, and feed them into the prompt. Follower count also feeds pricing. Personal or private accounts fall back to the description.</li>
   <li><b>Views and clicks</b> on the public page.</li>
 </ul>
 
