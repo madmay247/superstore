@@ -81,7 +81,7 @@
   <g stroke="#c0392b" stroke-width="1.2" fill="none" stroke-dasharray="3 3" marker-end="url(#a)"><path d="M224 30 V8 H401 V16"/></g>
   <text x="312" y="6" fill="#c0392b" text-anchor="middle" font-size="10">Gibberish → "What do you do?" · AI fails → "Set up manually"</text>
 </svg>
-<figcaption>Two screens, one decision point. If the answer is gibberish ("asdf"), the creator is asked what they do instead of getting a made-up store. Required fields are checked at Publish; a product missing something (e.g. the lead-magnet file the AI can't create) stays offline instead of blocking the store.</figcaption>
+<figcaption>Two screens, one decision point. If the answer is gibberish ("asdf"), the creator is asked what they do instead of getting a made-up store. A product missing something (like the download file or community invite link, which the AI can't create) stays offline instead of blocking the store.</figcaption>
 </figure>
 
 <div class="two avoid">
@@ -130,7 +130,7 @@
 
 <h2>4. What I deliberately did not build</h2>
 <ul>
-  <li><b>Reading Instagram profiles:</b> scraping is against Instagram's terms, and the official route (Business Discovery) needs Meta app review; covered above.</li>
+  <li><b>Reading Instagram profiles:</b> scraping is against Instagram's terms, and the official way needs Meta's approval; covered above.</li>
   <li><b>Payments, checkout and booking calendars:</b> the brief says they're optional, and SuperProfile already has them. The buttons lead to the product page, which is where they'd plug in.</li>
   <li><b>Hindi / Hinglish output:</b> high value for this audience, but needs a set of test cases to check quality. First thing in the next two weeks.</li>
   <li><b>Courses, ebooks and AI-made files:</b> the creator can't sell what doesn't exist yet. Generating a whole ebook would mean low-quality content under their name.</li>
@@ -141,8 +141,8 @@
 <ul>
   <li><b>One endpoint, one call:</b> <code>gpt-5.4-mini</code> with low reasoning effort. Of five models run on the same 8 creators, it was fastest among the good writers (~4 s vs ~9 s for <code>gpt-4o-mini</code>) with almost no rule breaks; <code>gpt-5.5</code> wrote slightly better at ~6 s. The output is <b>strict JSON schema</b>, so the model can only return the exact fields the page needs: name, link, bio, niche (from a fixed list), the lead magnet, two sessions with durations from allowed values, and the community or nothing.</li>
   <li><b>Prompt:</b> the model writes as a direct-response copywriter in the creator's own voice, outcome first. Each field carries its own rules in the schema: bio under 110 characters; descriptions open with the buyer's result, then three "•" lines of exactly what they get, then who it's for. Filler words ("journey", "unlock", "tailored", "next level"), exclamation marks and session lengths in the text are banned; the length is its own field, so text never goes stale when the creator edits it.</li>
-  <li><b>Quality control:</b> never invent a name, credential, number, testimonial or result. If no name is given, the name is left blank and the creator fills it in. Prices are set in code, not by the model. Community is checked twice. A draft that breaks a copy rule gets one rewrite naming the problem; a final code pass swaps leftover filler for plain words, strips exclamation marks and durations, and normalises bullets. Publishing is blocked until each live product has its required fields.</li>
-  <li><b>Failure handling:</b> empty input can't be submitted; long input is capped at 500 characters; gibberish ("asdf") gets a question back instead of a store; each model call times out after 15 s and is retried once; a failed or refused call shows a calm message plus a <b>"Set up manually"</b> button that opens the same review screen with blank products, so there's never a dead end. A failed per-field regenerate keeps the old text and shows an error under it.</li>
+  <li><b>Quality control:</b> never invent a name, credential, number, testimonial or result. If no name is given, the name is left blank for the creator to fill in, but the store link is still made from their topic (e.g. /cfa-prep) and doesn't change when they edit the name. Prices are set in code, not by the model. Community is checked twice. A draft that breaks a copy rule gets one rewrite naming the problem; a final code pass swaps leftover filler for plain words, strips exclamation marks and durations, and normalises bullets. An incomplete product stays offline; it never blocks the store from publishing.</li>
+  <li><b>Failure handling:</b> empty input can't be submitted; long input is capped at 500 characters; gibberish ("asdf") gets a question back instead of a store; each model call times out after 15 s and is retried once; a failed or refused call shows a calm message plus a <b>"Set up manually"</b> button that opens the same review screen with blank products, so there's never a dead end. A failed regenerate keeps the old text with a short note. If saving the store fails, the dashboard says the changes aren't live yet, with Try again, instead of claiming it's live. Large photos are shrunk before upload.</li>
   <li><b>Known gaps:</b> the model still invents plausible deliverable details ("5 eggless cake recipes", "a 6-week plan") that the creator has to check, and there are no per-creator rate limits yet.</li>
 </ul>
 
