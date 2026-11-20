@@ -5,13 +5,13 @@ import { ExternalLink, ChevronDown, Pencil, GripVertical, Trash2, Smartphone, X 
 import { store, themes } from "./data";
 import { ProductForm, WelcomeModal, AddProductModal, newProduct, EditLinkModal, EditHeaderModal, BrandWizard, productBlock, missing } from "./store/StoreModals";
 import { Avatar, SocialRow, PhonePreview, ProfileContext, defaultProfile, backdropProfile, useProfile, type Block, type Profile } from "./store/shared";
-import { baseSlug, loadStore, nextSlug, publishStore, regenProductField, saveStore, storeUrl, unpublishStore, useHost } from "./store/persist";
+import { baseSlug, loadStore, nextSlug, publishStore, regenProductField, saveStore, storeUrl, unpublishStore, useHost, type PublishResult } from "./store/persist";
 
 const TABS = ["Store"] as const;
 
 /* ---------------- Store ---------------- */
-function StoreTab({ blocks, setBlocks, theme, onAdd, slug, onEditLink, onEditHeader, onShare, copied, openId, setOpenId, pv, setPv, published, onPublish }: {
-  published: boolean; onPublish: () => void;
+function StoreTab({ blocks, setBlocks, theme, onAdd, slug, onEditLink, onEditHeader, onShare, copied, openId, setOpenId, pv, setPv, published, onPublish, sync, onRetry }: {
+  published: boolean; onPublish: () => void; sync: PublishResult; onRetry: () => void;
   pv: boolean; setPv: (v: boolean) => void;
   openId: number | null; setOpenId: (id: number | null) => void;
   blocks: Block[]; setBlocks: (b: Block[]) => void; theme: string; onAdd: () => void; slug: string; onEditLink: () => void; onEditHeader: () => void; onShare: () => void; copied: boolean;
@@ -33,7 +33,7 @@ function StoreTab({ blocks, setBlocks, theme, onAdd, slug, onEditLink, onEditHea
       const v = await regenProductField(about, b.data.kind, field, b.data[field]);
       setBlocks(blocksRef.current.map((x) => (x.id === id && x.data ? { ...x, ...productBlock({ ...x.data, [field]: v }) } : x)));
     } catch (e) {
-      setRegenError(e instanceof Error ? e.message : "Couldn't write a new version. Try again.");
+      setRegenError(e instanceof Error && e.message ? e.message : "Couldn't write a new version right now. Your text is unchanged.");
     } finally {
       setRegen(null);
     }
@@ -49,6 +49,12 @@ function StoreTab({ blocks, setBlocks, theme, onAdd, slug, onEditLink, onEditHea
   return (
     <div className="st-split">
       <div className="st-left">
+        {published && (sync === "error" || sync === "too_big") && (
+          <div className="sync-note" role="status">
+            <span>{sync === "too_big" ? "Your latest changes aren’t live: the store is too big. Try a smaller picture." : "Your latest changes aren’t live yet. We couldn’t reach the server."}</span>
+            {sync === "error" && <button type="button" onClick={onRetry}>Try again</button>}
+          </div>
+        )}
         <div className={`live${published ? "" : " off"}`}>
           {published ? (
             <>
@@ -58,7 +64,7 @@ function StoreTab({ blocks, setBlocks, theme, onAdd, slug, onEditLink, onEditHea
             </>
           ) : (
             <>
-              <span>🔒 Your Store isn’t published yet. Publish it to make {host}/{slug} live.</span>
+              <span>🔒 Your Store isn’t published yet.</span>
               <button className="live-edit" onClick={onEditLink}>Edit link</button>
               <button className="live-share" onClick={onPublish}>Publish</button>
             </>
@@ -117,7 +123,7 @@ function StoreTab({ blocks, setBlocks, theme, onAdd, slug, onEditLink, onEditHea
                         setBlocks(blocks.map((x) => (x.id === b.id ? { ...x, ...productBlock({ ...b.data!, ...patch }) } : x)))
                       }
                     />
-                    {regenError && openId === b.id && <small className="pf-err">{regenError}</small>}
+                    {regenError && openId === b.id && <small className="pf-note">{regenError}</small>}
                   </div>
                 )}
               </div>
@@ -160,6 +166,9 @@ export default function Page() {
   const [loaded, setLoaded] = useState(false);
   const [blocks, setBlocks] = useState<Block[]>([]);
   const [theme, setTheme] = useState(themes[9]);
+  /* Result of the last save to the server, so the creator is told when "live" isn't really up to date */
+  const [sync, setSync] = useState<PublishResult>("ok");
+  const [retry, setRetry] = useState(0);
 
   useEffect(() => {
     const saved = loadStore();
@@ -182,10 +191,12 @@ export default function Page() {
     // Debounced so typing doesn't hit the server on every keystroke.
     // If another creator already owns this link, move to a free one instead of failing silently.
     const t = setTimeout(async () => {
-      if ((await publishStore(s)) === "taken") setSlug(nextSlug(slug, profile.name));
+      const r = await publishStore(s);
+      if (r === "taken") setSlug(nextSlug(slug, profile.name));
+      else setSync(r);
     }, 600);
     return () => clearTimeout(t);
-  }, [loaded, slug, profile, blocks, theme, published]);
+  }, [loaded, slug, profile, blocks, theme, published, retry]);
 
   /* Take the store offline on the server first; only then mark it unpublished here, so the two never disagree */
   const unpublish = async () => {
@@ -238,7 +249,7 @@ export default function Page() {
 
       <div className="st-content">
         <ProfileContext.Provider value={setupOpen ? backdropProfile : profile}>
-        <StoreTab blocks={setupOpen ? backdropBlocks : blocks} setBlocks={setBlocks} theme={theme} onAdd={() => setAdding(true)} openId={openId} setOpenId={setOpenId} slug={slug} onEditLink={() => setEditingLink(true)} onEditHeader={() => setEditingHeader(true)} onShare={share} copied={copied} pv={pv} setPv={setPv} published={published} onPublish={() => setPublished(true)} />
+        <StoreTab blocks={setupOpen ? backdropBlocks : blocks} setBlocks={setBlocks} theme={theme} onAdd={() => setAdding(true)} openId={openId} setOpenId={setOpenId} slug={slug} onEditLink={() => setEditingLink(true)} onEditHeader={() => setEditingHeader(true)} onShare={share} copied={copied} pv={pv} setPv={setPv} published={published} onPublish={() => setPublished(true)} sync={sync} onRetry={() => setRetry((n) => n + 1)} />
         </ProfileContext.Provider>
       </div>
 
@@ -293,7 +304,8 @@ export default function Page() {
             }
             const r = await publishStore({ slug: v, profile, blocks, theme });
             if (r === "taken") return "That link is already taken";
-            if (r === "error") return "Couldn't save the link. Try again.";
+            if (r === "too_big") return "Your store is too big to publish. Try a smaller picture.";
+            if (r === "error") return "We couldn't reach the server. Try again in a moment.";
             unpublishStore(slug);
             setSlug(v);
             setEditingLink(false);

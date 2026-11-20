@@ -16,7 +16,7 @@ function isOwner(stored: string, token: string | null) {
 
 type Ctx = { params: Promise<{ slug: string }> };
 
-export async function GET(_: Request, { params }: Ctx) {
+async function getStore(_: Request, { params }: Ctx): Promise<Response> {
   const { slug } = await params;
   const pool = await db();
   const { rows } = await pool.query("select data from stores where slug = $1", [slug]);
@@ -26,7 +26,7 @@ export async function GET(_: Request, { params }: Ctx) {
 
 /* Publish or update. The first write to a slug claims it; the claimant's edit token
    (kept in their browser) is the only thing that can change it afterwards. */
-export async function PUT(req: Request, { params }: Ctx) {
+async function putStore(req: Request, { params }: Ctx) {
   const { slug } = await params;
   const token = req.headers.get("x-edit-token");
   if (!valid(slug)) return NextResponse.json({ error: "Invalid link" }, { status: 400 });
@@ -56,7 +56,7 @@ export async function PUT(req: Request, { params }: Ctx) {
   return NextResponse.json({ ok: true });
 }
 
-export async function DELETE(req: Request, { params }: Ctx) {
+async function deleteStore(req: Request, { params }: Ctx) {
   const { slug } = await params;
   const pool = await db();
   const { rows } = await pool.query("select token_hash from stores where slug = $1", [slug]);
@@ -67,3 +67,16 @@ export async function DELETE(req: Request, { params }: Ctx) {
   await pool.query("delete from stores where slug = $1", [slug]);
   return NextResponse.json({ ok: true });
 }
+
+/* If the database is unreachable, answer with a plain JSON error instead of an HTML crash page */
+const safe = (fn: (req: Request, ctx: Ctx) => Promise<Response>) => async (req: Request, ctx: Ctx) => {
+  try {
+    return await fn(req, ctx);
+  } catch (e) {
+    console.error("stores route failed", e);
+    return NextResponse.json({ error: "We couldn't reach the server. Try again in a moment." }, { status: 503 });
+  }
+};
+export const GET = safe(getStore);
+export const PUT = safe(putStore);
+export const DELETE = safe(deleteStore);

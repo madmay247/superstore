@@ -38,7 +38,7 @@ function editToken() {
   }
 }
 
-export type PublishResult = "ok" | "taken" | "error";
+export type PublishResult = "ok" | "taken" | "too_big" | "error";
 
 /* Push the store to the server so its link works on any device */
 export async function publishStore(s: SavedStore): Promise<PublishResult> {
@@ -48,7 +48,7 @@ export async function publishStore(s: SavedStore): Promise<PublishResult> {
       headers: { "Content-Type": "application/json", "x-edit-token": editToken() },
       body: JSON.stringify(s),
     });
-    return res.ok ? "ok" : res.status === 409 ? "taken" : "error";
+    return res.ok ? "ok" : res.status === 409 ? "taken" : res.status === 413 ? "too_big" : "error";
   } catch {
     return "error";
   }
@@ -72,12 +72,17 @@ export async function resetEverything() {
   } catch {}
 }
 
-export async function fetchStore(slug: string): Promise<SavedStore | null> {
+/* "missing" only when the server says there's no such store; anything else (offline, server down) is "error",
+   so a buyer never sees "Store not found" for a store that exists */
+export async function fetchStore(slug: string): Promise<SavedStore | "missing" | "error"> {
   try {
     const res = await fetch(`/api/stores/${encodeURIComponent(slug)}`, { cache: "no-store" });
-    return res.ok ? ((await res.json()) as SavedStore) : null;
+    if (res.status === 404) return "missing";
+    if (!res.ok) return "error";
+    const data = (await res.json()) as SavedStore;
+    return data?.profile && Array.isArray(data.blocks) ? data : "error";
   } catch {
-    return null;
+    return "error";
   }
 }
 
@@ -100,18 +105,39 @@ export const useHost = () => useSyncExternalStore(() => () => {}, () => window.l
 
 export const storeUrl =(slug: string) => `${window.location.origin}/${slug}`;
 
-/* Data URLs, unlike blob URLs, survive a reload and work on the public page */
-export function readImage(file: File, done: (url: string) => void) {
+/* Data URLs, unlike blob URLs, survive a reload and work on the public page. Photos are shrunk to
+   at most 900 px so a phone picture doesn't make the store too big to publish. */
+export function readImage(file: File, done: (url: string) => void, onError?: () => void) {
+  if (!file.type.startsWith("image/")) return onError?.();
   const r = new FileReader();
-  r.onload = () => typeof r.result === "string" && done(r.result);
+  r.onerror = () => onError?.();
+  r.onload = () => {
+    if (typeof r.result !== "string") return onError?.();
+    const src = r.result;
+    if (file.type === "image/gif" || file.type === "image/svg+xml") return file.size < 1_500_000 ? done(src) : onError?.();
+    const img = new Image();
+    img.onerror = () => onError?.();
+    img.onload = () => {
+      const scale = Math.min(1, 900 / Math.max(img.width, img.height));
+      const c = document.createElement("canvas");
+      c.width = Math.round(img.width * scale);
+      c.height = Math.round(img.height * scale);
+      const ctx = c.getContext("2d");
+      if (!ctx) return done(src);
+      ctx.drawImage(img, 0, 0, c.width, c.height);
+      done(c.toDataURL(file.type === "image/png" ? "image/png" : "image/jpeg", 0.85));
+    };
+    img.src = src;
+  };
   r.readAsDataURL(file);
 }
 
 /* Ask the AI for a fresh take on one field of one product. Throws a message fit to show the user. */
 export async function regenProductField(about: string, kind: Product["kind"], field: "title" | "description", current: string): Promise<string> {
-  const res = await fetch("/api/setup", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ about, part: kind, field, current }) });
+  const res = await fetch("/api/setup", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ about, part: kind, field, current }) }).catch(() => null);
+  if (!res) throw new Error("Couldn't write a new version right now. Your text is unchanged.");
   const data = await res.json().catch(() => ({}));
   const v = (data.product as Partial<Product> | undefined)?.[field];
-  if (!res.ok || !v) throw new Error(data.error || "Couldn't write a new version. Try again.");
+  if (!res.ok || !v) throw new Error("Couldn't write a new version right now. Your text is unchanged.");
   return v;
 }

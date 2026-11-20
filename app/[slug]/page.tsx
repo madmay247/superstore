@@ -7,11 +7,13 @@ import { Avatar, SocialRow, ProfileContext, StoreBlocks } from "../store/shared"
 
 export default function PublicStore({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
-  const [data, setData] = useState<SavedStore | null | undefined>(undefined);
+  const [data, setData] = useState<SavedStore | "missing" | "error" | undefined>(undefined);
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
+    setData(undefined);
     fetchStore(slug).then(setData);
-  }, [slug]);
+  }, [slug, attempt]);
 
   if (data === undefined) {
     return (
@@ -20,7 +22,16 @@ export default function PublicStore({ params }: { params: Promise<{ slug: string
       </div>
     );
   }
-  if (!data) {
+  if (data === "error") {
+    return (
+      <div className="pub pub-missing">
+        <h1>This store didn’t load</h1>
+        <p>Check your connection and try again.</p>
+        <button type="button" className="pub-home" onClick={() => setAttempt((a) => a + 1)}>Try again</button>
+      </div>
+    );
+  }
+  if (data === "missing") {
     return (
       <div className="pub pub-missing">
         <h1>Store not found</h1>

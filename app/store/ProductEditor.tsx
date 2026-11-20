@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { X, Paperclip, Clock, Share2, ImagePlus } from "lucide-react";
 import { useProfile, Avatar, formatPrice, type Product, type PricingMode, type Upload } from "./shared";
+import { readImage } from "./persist";
 
 const EMOJIS = ["😎", "👋", "🎯", "💡", "🚀", "📈", "🧠", "☕", "🎓", "💬", "🔥", "✨"];
 const SECTIONS = ["Gallery", "Testimonials", "FAQ", "About Me", "Showcase Products"];
@@ -40,7 +41,7 @@ function Cover({ p, onChange, required }: { p: Product; onChange: Patch; require
           <span className="pe-drop-ic"><ImagePlus size={20} /></span>
           <span><b>Upload</b> {required ? "or drag & drop" : "files from your system"}</span>
           <small>1280 x 720 (16:9) recommended, up to 10MB each</small>
-          <input type="file" accept="image/*" onChange={(e) => e.target.files?.[0] && onChange({ cover: URL.createObjectURL(e.target.files[0]) })} />
+          <input type="file" accept="image/*" onChange={(e) => e.target.files?.[0] && readImage(e.target.files[0], (cover) => onChange({ cover }))} />
         </label>
       )}
     </Row>

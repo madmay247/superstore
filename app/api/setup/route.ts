@@ -324,7 +324,7 @@ async function generate(key: string, model: string, user: string): Promise<Call>
 
 /* ---------- route ---------- */
 
-export async function POST(req: Request) {
+async function handle(req: Request): Promise<Response> {
   const key = process.env.OPENAI_API_KEY;
   if (!key) return NextResponse.json({ error: "OPENAI_API_KEY is not set" }, { status: 500 });
 
@@ -376,4 +376,14 @@ export async function POST(req: Request) {
   }
 
   return NextResponse.json({ name: d.display_name, bio: d.bio, niche: d.niche, audience, products });
+}
+
+/* Anything unexpected still comes back as a calm JSON error the editor knows how to show */
+export async function POST(req: Request) {
+  try {
+    return await handle(req);
+  } catch (e) {
+    console.error("setup route failed", e);
+    return NextResponse.json({ error: "Our AI is busy right now." }, { status: 500 });
+  }
 }

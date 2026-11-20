@@ -445,7 +445,8 @@ function EmojiPicker({ value, fallback, onPick }: { value?: string; fallback: st
   );
 }
 
-export function ProductForm({ p, bad, onChange, onDelete, onRegen, regenField }: { p: Product; bad: (k: string) => boolean; onChange: (patch: Partial<Product>) => void; onDelete?: () => void; onRegen?: (field: "title" | "description") => void; regenField?: string | null }) {
+/* showWhy: the "Why ₹X?" price notes, shown only while the creator is first setting up their store */
+export function ProductForm({ p, bad, onChange, onDelete, onRegen, regenField, showWhy }: { p: Product; bad: (k: string) => boolean; onChange: (patch: Partial<Product>) => void; onDelete?: () => void; onRegen?: (field: "title" | "description") => void; regenField?: string | null; showWhy?: boolean }) {
   const m = kindMeta[p.kind];
   const rg = (f: "title" | "description") => (onRegen && (regenField === f || String(p[f] ?? "").trim()) ? { busy: regenField === f, onClick: () => onRegen(f) } : undefined);
   const session = p.kind === "discovery" || p.kind === "premium";
@@ -485,7 +486,7 @@ export function ProductForm({ p, bad, onChange, onDelete, onRegen, regenField }:
               <input className="bw-input" type="number" min={1} value={p.price || ""} onChange={(e) => onChange({ price: Number(e.target.value) || 0 })} />
             </Field>
           </div>
-          {p.priceNote && p.priceNote.price === p.price && (
+          {showWhy && p.priceNote && p.priceNote.price === p.price && (
             <p className="pf-why">
               <b>Why {formatPrice(p.price)}?</b> {p.priceNote.why}
             </p>
@@ -510,7 +511,7 @@ export function ProductForm({ p, bad, onChange, onDelete, onRegen, regenField }:
               <input className="bw-input" type="number" min={0} value={p.price} onChange={(e) => onChange({ price: Number(e.target.value) || 0 })} />
             </Field>
           </div>
-          {p.priceNote && p.priceNote.price === p.price && (
+          {showWhy && p.priceNote && p.priceNote.price === p.price && (
             <p className="pf-why">
               <b>Why {p.price > 0 ? formatPrice(p.price) : "free"}?</b> {p.priceNote.why}
             </p>
@@ -574,7 +575,7 @@ function ProductCard({ p, open, showErrors, regenField, onRegen, onToggle, onCha
         <ChevronDown size={18} className="pc-chev" />
       </button>
       </div>
-      {open && <ProductForm p={p} bad={bad} onChange={onChange} onDelete={onDelete} onRegen={onRegen} regenField={regenField} />}
+      {open && <ProductForm p={p} bad={bad} onChange={onChange} onDelete={onDelete} onRegen={onRegen} regenField={regenField} showWhy />}
     </div>
   );
 }
@@ -660,18 +661,19 @@ export function BrandWizard({ profile, setProfile, theme, setTheme, blocks, onFi
   };
 
   const [regenKey, setRegenKey] = useState<string | null>(null);
+  const [regenNote, setRegenNote] = useState("");
   /* Regenerate a single generated piece (name, bio or one product) without touching the rest */
   const regen = async (part: string, key: string, current: string, apply: (d: any) => void, field?: string) => {
     if (regenKey) return;
     setRegenKey(key);
-    setError("");
+    setRegenNote("");
     try {
       const res = await fetch("/api/setup", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ about: profile.about, part, field, current }) });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
+      if (!res.ok) throw new Error();
       apply(data);
-    } catch (e) {
-      setError(e instanceof Error && e.message ? e.message : "Something went wrong. Try again.");
+    } catch {
+      setRegenNote("Couldn't write a new version right now. Your text is unchanged.");
     } finally {
       setRegenKey(null);
     }
@@ -780,7 +782,7 @@ export function BrandWizard({ profile, setProfile, theme, setTheme, blocks, onFi
                 </button>
               </div>
               <p className="bw-sub muted">We drafted this from your answer. Fill in what’s left and it goes live.</p>
-              {error && !loading && <p className="bw-error" role="alert">{error}</p>}
+              {regenNote && <p className="pf-note" role="status">{regenNote}</p>}
               <div className="bw-body bw-review">
                 <section className="bw-brand">
                   <div className="bw-avatar">
