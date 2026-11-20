@@ -591,7 +591,7 @@ export function BrandWizard({ profile, setProfile, theme, setTheme, blocks, onFi
   onFinish: (products: Product[], link: string, publish: boolean) => void;
 }) {
   const host = useHost();
-  const [link, setLink] = useState<string | null>(null); /* null until the creator edits it; then it stops following the name */
+  const [link, setLink] = useState<string | null>(null); /* set by the AI draft or the creator; follows the name only in manual setup */
   const [step, setStep] = useState(1);
   const [products, setProducts] = useState<Product[]>(blankProducts);
   const [openCard, setOpenCard] = useState(-1);
@@ -649,6 +649,7 @@ export function BrandWizard({ profile, setProfile, theme, setTheme, blocks, onFi
       }
       if (!res.ok) throw new Error(res.status === 422 ? data.error : "");
       setProfile({ ...profile, name: data.name, bio: data.bio });
+      if (data.link) setLink(data.link); /* the AI's link sticks; editing the name no longer changes it */
       setProducts(data.products as Product[]);
       setDraftedFrom(about);
       setOpenCard(-1);

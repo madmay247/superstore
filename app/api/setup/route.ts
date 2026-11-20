@@ -110,7 +110,7 @@ const schema = {
     },
     follow_up: { type: "string", description: "If input_quality is 'gibberish': one short, friendly question (max 140 characters) asking what they do and who they help. Empty string when 'ok'." },
     display_name: { type: "string", description: "The creator's name as they'd show it publicly. Only use a name the creator actually gave in the input, however casually ('Rahul here', 'main Neha hoon', 'this is Arjun' all give a name); it may be combined with their niche or brand (e.g. 'Mayank | Finance'). If they gave no name, return an empty string. Never invent a name or a brand name." },
-    store_handle: { type: "string", description: "A short URL handle for their store link: lowercase letters, digits, hyphen or underscore only, max 30 characters, built from the creator's own name and/or niche (e.g. mayank-finance). Return an empty string if they gave no name." },
+    store_handle: { type: "string", description: "Always return a short, memorable link for their store: lowercase letters, digits and hyphens only, 4 to 25 characters. If they gave a name, use it with their topic (e.g. 'priya-fitness', 'rahul-ca'). If not, build it from what they teach or offer (e.g. 'cfa-prep', 'eggless-baking', 'yoga-with-me'). Never empty." },
     bio: { type: "string", description: "Max 110 characters. Outcome-first, first person: who they help, the concrete result those people get, and how (e.g. \"I help CFA Level 1 candidates build a 90-day study plan and pass first time\"). No vague words. No hashtags. Only outcomes the creator's own words support." },
     niche: { type: "string", enum: Object.keys(NICHE_PRICE) },
     audience_size: { type: "integer", description: "Total followers or subscribers the creator states in the input, as a plain number (20K = 20000, 1.2 lakh = 120000). 0 if they didn't state a number. Never guess." },
@@ -324,6 +324,14 @@ async function generate(key: string, model: string, user: string): Promise<Call>
 
 /* ---------- route ---------- */
 
+/* The store link the AI suggested, made safe for a URL. Falls back to the niche so there's always one. */
+const RESERVED_SLUGS = new Set(["api", "store", "_next", "favicon-ico"]);
+function handleOf(d: Draft) {
+  const clean = (s: string) => s.normalize("NFKD").toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "").slice(0, 30).replace(/-$/, "");
+  const h = clean(d.store_handle || "");
+  return h.length >= 3 && !RESERVED_SLUGS.has(h) ? h : clean(String(d.niche).replace(/_/g, "-")) || "my-store";
+}
+
 async function handle(req: Request): Promise<Response> {
   const key = process.env.OPENAI_API_KEY;
   if (!key) return NextResponse.json({ error: "OPENAI_API_KEY is not set" }, { status: 500 });
@@ -368,14 +376,14 @@ async function handle(req: Request): Promise<Response> {
 
   /* Regenerating one piece: send back only that piece */
   if (part) {
-    if (part === "link") return NextResponse.json({ link: (d.store_handle || "").toLowerCase().replace(/[^a-z0-9_-]/g, "").slice(0, 30) });
+    if (part === "link") return NextResponse.json({ link: handleOf(d) });
     if (part === "name" || part === "bio") return NextResponse.json({ name: d.display_name, bio: d.bio });
     const one = products.find((x) => x.kind === part) ?? (part === "community" && d.community ? { kind: "community", emoji: d.community.emoji, title: d.community.title, description: d.community.description, link: "", price: 0 } : undefined);
     if (!one) return NextResponse.json({ error: "Couldn't write a new version. Try again." }, { status: 422 });
     return NextResponse.json({ product: one });
   }
 
-  return NextResponse.json({ name: d.display_name, bio: d.bio, niche: d.niche, audience, products });
+  return NextResponse.json({ name: d.display_name, bio: d.bio, niche: d.niche, audience, link: handleOf(d), products });
 }
 
 /* Anything unexpected still comes back as a calm JSON error the editor knows how to show */

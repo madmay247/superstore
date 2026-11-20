@@ -93,10 +93,10 @@ export function baseSlug(name: string) {
   return s === "api" || s === "store" ? `${s}shop` : s;
 }
 
-/* Called when the current link belongs to someone else: try the plain name first, then name + 4 digits */
-export function nextSlug(current: string, name: string) {
-  const base = baseSlug(name);
-  return current === base ? `${base}${Math.floor(1000 + Math.random() * 9000)}` : base;
+/* Called when the current link belongs to someone else: keep the same link and add 4 digits, e.g. cfa-prep -> cfa-prep-4821 */
+export function nextSlug(current: string) {
+  const base = current.replace(/-\d{4}$/, "").slice(0, 30) || "my-store";
+  return `${base}-${Math.floor(1000 + Math.random() * 9000)}`;
 }
 
 /* The host the app is actually served from (localhost, the Vercel domain, or a custom domain), so the

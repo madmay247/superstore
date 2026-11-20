@@ -192,7 +192,7 @@ export default function Page() {
     // If another creator already owns this link, move to a free one instead of failing silently.
     const t = setTimeout(async () => {
       const r = await publishStore(s);
-      if (r === "taken") setSlug(nextSlug(slug, profile.name));
+      if (r === "taken") setSlug(nextSlug(slug));
       else setSync(r);
     }, 600);
     return () => clearTimeout(t);
