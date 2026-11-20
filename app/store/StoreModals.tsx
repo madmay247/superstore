@@ -360,9 +360,11 @@ export function missing(p: Product) {
   return need.filter(([, v]) => (typeof v === "string" ? !v.trim() : !v)).map(([k]) => k);
 }
 
-/* What stops the store from publishing. The AI can't produce the lead magnet's file,
-   so a missing file only keeps that product offline instead of blocking the whole store. */
-export const publishBlockers = (p: Product) => missing(p).filter((k) => !(p.kind === "file" && k === "file"));
+/* What stops the store from publishing. An incomplete product just stays offline (its card says what's
+   left to fill), so it never blocks the store. Only a product the creator switched on and then emptied
+   blocks, and never for the download file or community link, which the AI can't create. */
+export const publishBlockers = (p: Product) =>
+  p.live === true ? missing(p).filter((k) => !(p.kind === "file" && k === "file") && !(p.kind === "community" && k === "link")) : [];
 
 /* Live unless switched off; incomplete products can never be live */
 export const isLive = (p: Product) => p.live !== false && missing(p).length === 0;
