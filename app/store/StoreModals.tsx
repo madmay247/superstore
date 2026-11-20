@@ -603,6 +603,9 @@ export function BrandWizard({ profile, setProfile, theme, setTheme, blocks, onFi
   const [line, setLine] = useState(0);
   const [error, setError] = useState("");
   const [draftedFrom, setDraftedFrom] = useState("");
+  /* Every new setup starts with an empty answer box, even if an earlier, unfinished setup saved one in this browser */
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { if (profile.about) setProfile({ ...profile, about: "" }); }, []);
   const set = (patch: Partial<Profile>) => setProfile({ ...profile, ...patch });
 
   useEffect(() => {
