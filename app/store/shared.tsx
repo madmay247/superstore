@@ -25,6 +25,8 @@ export type Product = {
   emoji?: string;
   duration?: number;
   collectLeads?: boolean;
+  /* why the AI suggested this price; shown in the editor only while the price is unchanged */
+  priceNote?: { price: number; why: string };
   shortDescription?: string;
   cover?: string;
   pricing?: PricingMode;
@@ -122,6 +124,25 @@ const landingCta = (d: Product) => (d.kind === "file" ? d.buttonText?.trim() || 
 
 /* The product list a visitor sees: tap a product to expand its description, then open its landing page.
    Shared by the editor's phone preview and the public store page so the two never drift apart. */
+/* Product description: plain lines become paragraphs, lines starting with "•" or "-" become a real list,
+   so wrapped bullet text lines up under its bullet instead of under the dot */
+export function RichDesc({ text, className }: { text: string; className?: string }) {
+  const groups: (string | string[])[] = [];
+  for (const raw of text.split("\n")) {
+    const line = raw.trim();
+    if (!line) continue;
+    const item = line.match(/^[•\-*–]\s*(.+)$/);
+    const last = groups[groups.length - 1];
+    if (item) Array.isArray(last) ? last.push(item[1]) : groups.push([item[1]]);
+    else groups.push(line);
+  }
+  return (
+    <div className={`rd${className ? ` ${className}` : ""}`}>
+      {groups.map((g, i) => (Array.isArray(g) ? <ul key={i}>{g.map((li, j) => <li key={j}>{li}</li>)}</ul> : <p key={i}>{g}</p>))}
+    </div>
+  );
+}
+
 export function StoreBlocks({ theme, blocks, small }: { theme: string; blocks: Block[]; small?: boolean }) {
   const [openId, setOpenId] = useState<number | null>(null);
   const [landing, setLanding] = useState<Block | null>(null); /* kept separate from openId so closing the page leaves the dropdown as it was */
@@ -157,7 +178,7 @@ export function StoreBlocks({ theme, blocks, small }: { theme: string; blocks: B
               </button>
               {open && (
                 <div className="pp-more">
-                  {d.description.trim() && <p>{d.description}</p>}
+                  {d.description.trim() && <RichDesc text={d.description} />}
                   <button type="button" className="pp-cta" onClick={() => setLanding(b)}>{cta}</button>
                 </div>
               )}

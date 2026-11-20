@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Briefcase, Magnet, Banknote, ChevronDown, Link2, CornerDownLeft, Check, Pencil, Paperclip, X, Loader2, RefreshCw, Plus, Trash2 } from "lucide-react";
+import { Briefcase, Magnet, Banknote, ChevronDown, Link2, CornerDownLeft, Check, Pencil, Paperclip, X, Loader2, RefreshCw, Plus, Trash2, Eye } from "lucide-react";
 import { BRAND, quickAdds, createAndSell, themes } from "../data";
 import { ProductEditor } from "./ProductEditor";
 import { readImage, baseSlug, useHost } from "./persist";
@@ -447,7 +447,7 @@ function EmojiPicker({ value, fallback, onPick }: { value?: string; fallback: st
 
 export function ProductForm({ p, bad, onChange, onDelete, onRegen, regenField }: { p: Product; bad: (k: string) => boolean; onChange: (patch: Partial<Product>) => void; onDelete?: () => void; onRegen?: (field: "title" | "description") => void; regenField?: string | null }) {
   const m = kindMeta[p.kind];
-  const rg = (f: "title" | "description") => (onRegen ? { busy: regenField === f, onClick: () => onRegen(f) } : undefined);
+  const rg = (f: "title" | "description") => (onRegen && (regenField === f || String(p[f] ?? "").trim()) ? { busy: regenField === f, onClick: () => onRegen(f) } : undefined);
   const session = p.kind === "discovery" || p.kind === "premium";
   return (
     <div className="pc-body">
@@ -485,6 +485,11 @@ export function ProductForm({ p, bad, onChange, onDelete, onRegen, regenField }:
               <input className="bw-input" type="number" min={1} value={p.price || ""} onChange={(e) => onChange({ price: Number(e.target.value) || 0 })} />
             </Field>
           </div>
+          {p.priceNote && p.priceNote.price === p.price && (
+            <p className="pf-why">
+              <b>Why {formatPrice(p.price)}?</b> {p.priceNote.why}
+            </p>
+          )}
           <Field label="Description" regen={rg("description")} bad={bad("description")}>
             <textarea className="pf-ta" value={p.description} onChange={(e) => onChange({ description: e.target.value })} />
           </Field>
@@ -505,6 +510,11 @@ export function ProductForm({ p, bad, onChange, onDelete, onRegen, regenField }:
               <input className="bw-input" type="number" min={0} value={p.price} onChange={(e) => onChange({ price: Number(e.target.value) || 0 })} />
             </Field>
           </div>
+          {p.priceNote && p.priceNote.price === p.price && (
+            <p className="pf-why">
+              <b>Why {p.price > 0 ? formatPrice(p.price) : "free"}?</b> {p.priceNote.why}
+            </p>
+          )}
           <UploadField label="File" bad={bad("file")} value={p.file} onChange={(file) => onChange({ file })} />
           <div className="pe-toggle pf-lead">
             <span>
@@ -620,22 +630,30 @@ export function BrandWizard({ profile, setProfile, theme, setTheme, blocks, onFi
     setTimeout(() => document.querySelectorAll(".bw-section .pc")[products.length]?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 60);
   };
 
-  const draft = async (force = false) => {
+  /* A follow-up question from the AI when the answer is too thin to build a store from */
+  const [ask, setAsk] = useState<{ q: string; canSkip: boolean } | null>(null);
+  const draft = async (force = false, skipCheck = false) => {
     const about = profile.about.trim();
     if (!force && about === draftedFrom) return setStep(2);
     setLoading(true);
     setError("");
+    setAsk(null);
     try {
-      const res = await fetch("/api/setup", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ about }) });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
+      const res = await fetch("/api/setup", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ about, skipCheck }) });
+      const data = await res.json().catch(() => ({}));
+      if (data.followUp) {
+        setAsk({ q: data.error, canSkip: data.quality === "too_vague" });
+        setTimeout(() => document.getElementById("bw-about")?.focus(), 30);
+        return;
+      }
+      if (!res.ok) throw new Error(res.status === 422 ? data.error : "");
       setProfile({ ...profile, name: data.name, bio: data.bio });
       setProducts(data.products as Product[]);
       setDraftedFrom(about);
       setOpenCard(-1);
       setStep(2);
     } catch (e) {
-      setError(e instanceof Error && e.message ? e.message : "Something went wrong. Try again.");
+      setError(e instanceof Error && e.message ? e.message : "Sorry, our AI hit a snag.");
     } finally {
       setLoading(false);
     }
@@ -659,6 +677,7 @@ export function BrandWizard({ profile, setProfile, theme, setTheme, blocks, onFi
     }
   };
 
+  const [previewOpen, setPreviewOpen] = useState(false);
   const [showErrors, setShowErrors] = useState(false);
   const nameBad = showErrors && !profile.name.trim();
   const slugValue = link ?? baseSlug(profile.name);
@@ -680,6 +699,19 @@ export function BrandWizard({ profile, setProfile, theme, setTheme, blocks, onFi
 
   return (
     <div className="overlay">
+      {previewOpen && (
+        <div className="bw-pv" role="dialog" aria-modal="true" aria-label="Store preview" onClick={() => setPreviewOpen(false)}>
+          <div className="bw-pv-in" onClick={(e) => e.stopPropagation()}>
+            <button type="button" className="bw-pv-x" aria-label="Close preview" onClick={() => setPreviewOpen(false)}><X size={18} /></button>
+            <PhonePreview theme={theme} blocks={previewBlocks} slug={slugValue} />
+            <div className="bw-themes" role="radiogroup" aria-label="Theme">
+              {themes.map((t, i) => (
+                <button type="button" key={t} role="radio" aria-checked={t === theme} aria-label={`Theme ${i + 1}`} className={t === theme ? "on" : ""} style={{ background: t }} onClick={() => setTheme(t)} />
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
       {editing >= 0 && (
         <ProductEditor
           p={products[editing]}
@@ -718,11 +750,25 @@ export function BrandWizard({ profile, setProfile, theme, setTheme, blocks, onFi
                     </span>
                   </div>
                 )}
+                {ask && !loading && (
+                  <div className="bw-ask" role="status">
+                    <p>{ask.q}</p>
+                    <span>
+                      Add it above and continue.
+                      {ask.canSkip && (
+                        <> <button type="button" onClick={() => draft(true, true)}>Draft anyway</button></>
+                      )}{" "}
+                      <button type="button" onClick={() => { setAsk(null); setStep(2); }}>Set up manually</button>
+                    </span>
+                  </div>
+                )}
                 {error && !loading && (
-                  <p className="bw-error" role="alert">
-                    {error}{" "}
-                    <button type="button" onClick={() => { setError(""); setStep(2); }}>Set up manually</button>
-                  </p>
+                  <div className="bw-ask bw-oops" role="status">
+                    <p>{error}</p>
+                    <span>
+                      <button type="button" onClick={() => { setError(""); setStep(2); }}>Set up manually</button>
+                    </span>
+                  </div>
                 )}
               </div>
             </>
@@ -730,7 +776,12 @@ export function BrandWizard({ profile, setProfile, theme, setTheme, blocks, onFi
 
           {step === 2 && (
             <>
-              <h2>Your store is ready</h2>
+              <div className="bw-head">
+                <h2>Your store is ready</h2>
+                <button type="button" className="bw-preview-btn" onClick={() => setPreviewOpen(true)}>
+                  <Eye size={15} /> Preview
+                </button>
+              </div>
               <p className="bw-sub muted">We drafted this from your answer. Fill in what’s left and it goes live.</p>
               {error && !loading && <p className="bw-error" role="alert">{error}</p>}
               <div className="bw-body bw-review">
@@ -745,16 +796,20 @@ export function BrandWizard({ profile, setProfile, theme, setTheme, blocks, onFi
                   <div className="bw-fields">
                     <div className="bw-lrow">
                       <label htmlFor="bw-name">Display Name</label>
+                      {(regenKey === "name" || profile.name.trim()) && (
                       <button type="button" className="bw-ri" aria-label="Regenerate name" data-tip="Regenerate" disabled={regenKey === "name"} onClick={() => regen("name", "name", profile.name, (d) => { if (d.name) set({ name: d.name }); })}>
                         <RefreshCw size={14} className={regenKey === "name" ? "spin" : undefined} />
                       </button>
+                      )}
                     </div>
                     <input id="bw-name" className={`bw-input${nameBad ? " err" : ""}`} value={profile.name} maxLength={50} onChange={(e) => set({ name: e.target.value })} />
                     <div className="bw-lrow">
                       <label htmlFor="bw-bio">Bio</label>
+                      {(regenKey === "bio" || profile.bio.trim()) && (
                       <button type="button" className="bw-ri" aria-label="Regenerate bio" data-tip="Regenerate" disabled={regenKey === "bio"} onClick={() => regen("bio", "bio", profile.bio, (d) => set({ bio: d.bio }))}>
                         <RefreshCw size={14} className={regenKey === "bio" ? "spin" : undefined} />
                       </button>
+                      )}
                     </div>
                     <div className="bw-ta">
                       <textarea id="bw-bio" value={profile.bio} maxLength={BIO_MAX} onChange={(e) => set({ bio: e.target.value })} />
@@ -762,9 +817,11 @@ export function BrandWizard({ profile, setProfile, theme, setTheme, blocks, onFi
                     </div>
                     <div className="bw-lrow">
                       <label htmlFor="bw-link">Store link</label>
+                      {(regenKey === "link" || slugValue.trim()) && (
                       <button type="button" className="bw-ri" aria-label="Regenerate store link" data-tip="Regenerate" disabled={regenKey === "link"} onClick={() => regen("link", "link", slugValue, (d) => { if (d.link) setLink(d.link); })}>
                         <RefreshCw size={14} className={regenKey === "link" ? "spin" : undefined} />
                       </button>
+                      )}
                     </div>
                     <div className={`bw-link${linkBad ? " err" : ""}`} data-invalid={linkBad || undefined}>
                       <span>{host}/</span>

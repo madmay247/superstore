@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { ArrowLeft, ArrowRight, ChevronDown, Clock, Repeat, FileText, ShieldCheck } from "lucide-react";
 import { themeInk } from "../data";
-import { Avatar, formatPrice, useProfile, type Product } from "./shared";
+import { Avatar, RichDesc, formatPrice, useProfile, type Product } from "./shared";
 
 const KIND_LABEL: Record<Product["kind"], string> = { file: "Digital file", discovery: "1:1 session", premium: "1:1 session", community: "Community" };
 const kb = (n: number) => (n > 1e6 ? `${(n / 1e6).toFixed(1)} MB` : `${Math.max(1, Math.round(n / 1e3))} KB`);
@@ -138,7 +138,7 @@ export function ProductLanding({ product: p, theme, cta, onClose }: { product: P
               </div>
             </div>
             <div className="pl-stats">{stats.map((x, i) => <div key={i}>{x}</div>)}</div>
-            {p.description.trim() && <p className="pl-desc pl-desc-body">{p.description}</p>}
+            {p.description.trim() && <RichDesc text={p.description} className="pl-desc pl-desc-body" />}
             {session && <div className="pl-book-inline"><BookingPanel b={book} set={setBooking} meta={meta} /></div>}
             {p.kind === "file" && p.file && (
               <div className="pl-incl">

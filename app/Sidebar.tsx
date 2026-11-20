@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Store, ArrowUp, ChevronUp, X, RotateCcw } from "lucide-react";
-import { BRAND, user } from "./data";
+import { Store, ArrowUp, X, RotateCcw } from "lucide-react";
+import { BRAND } from "./data";
 
 export function Logo() {
   return (
@@ -56,11 +56,6 @@ export default function Sidebar({ onClose, onReset }: { onClose?: () => void; on
               <ArrowUp size={12} strokeWidth={3} />
             </span>
           </button>
-        </div>
-        <div className="sb-user">
-          <span className="avatar">{user.fullName.split(" ").map((s) => s[0]).join("")}</span>
-          <span className="sb-user-name">{user.fullName}</span>
-          <ChevronUp size={15} />
         </div>
       </div>
     </nav>
