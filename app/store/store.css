@@ -787,3 +787,26 @@ select.bw-input { background: #fff; padding-right: 8px; }
 .pub-missing h1 { font-size: 22px; margin: 0; }
 .pub-missing p { margin: 0; color: #666; }
 .pub-missing button.pub-home { border: 0; cursor: pointer; font: inherit; font-weight: 600; }
+
+/* Public store on desktop: profile on the left, products as wide pills on the right. Phones keep one column. */
+@media (min-width: 900px) {
+  .pub-col { max-width: 1180px; min-height: 100dvh; display: grid; grid-template-columns: minmax(300px, 380px) minmax(0, 1fr); align-items: start; gap: 72px; padding: max(56px, 10vh) 48px 56px; }
+  /* The profile stays put while products open and close beside it */
+  .pub .pp-top { padding-top: 0; gap: 10px; position: sticky; top: max(56px, 10vh); }
+  .pub .pp-top .st-avatar, .pub .pp-top .st-avatar img, .pub .pp-top .st-avatar svg { width: 300px !important; height: 300px !important; }
+  .pub .pp-top b { font-size: 34px; margin-top: 18px; letter-spacing: -.01em; }
+  .pub .pp-bio { font-size: 20px; line-height: 1.4; max-width: 360px; }
+  .pub .pp-top .social-row { margin-top: 18px; gap: 18px; transform: scale(1.4); }
+  .pub .pp-blocks { padding: 0; gap: 22px; }
+  .pub .pp-block { border-radius: 999px; min-height: 84px; font-size: 20px; background: rgba(255,255,255,.94); box-shadow: 0 6px 0 rgba(0,0,0,.08), 0 10px 24px rgba(0,0,0,.08); transition: transform .15s, box-shadow .15s, border-radius .2s; }
+  .pub .pp-block:hover { transform: translateY(-2px); box-shadow: 0 8px 0 rgba(0,0,0,.08), 0 14px 28px rgba(0,0,0,.1); }
+  .pub .pp-block.open { border-radius: 32px; transform: none; }
+  .pub .pp-head, .pub .pp-block.has-ic:not(.exp) { padding: 12px 30px 12px 12px; gap: 18px; min-height: 84px; }
+  .pub .pp-ic { width: 60px; height: 60px; font-size: 28px; }
+  .pub .pp-copy { text-align: center; font-weight: 600; }
+  .pub .pp-copy small { font-size: 14px; margin-top: 3px; }
+  .pub .pp-chev { width: 22px; height: 22px; }
+  .pub .pp-more { padding: 4px 40px 28px; }
+  .pub .pp-more .rd { font-size: 15.5px; }
+  .pub .pp-cta { align-self: flex-start; padding: 13px 28px; border-radius: 999px; }
+}
