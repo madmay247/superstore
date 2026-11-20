@@ -124,7 +124,6 @@
 <tr><td><b>The AI picks a niche; the price comes from a table in code</b></td><td>LLM prices drift between runs (₹799, then ₹2,500) and can't be explained. A table of 11 niches (₹1,999 for hobbies up to ₹4,999 for finance and business) is consistent, easy to tune with real sales data, and never made up. ₹499 for the discovery call is impulse-friendly but filters out time-wasters.</td><td>Ignores audience size and the creator's seniority. No "why this price" shown yet.</td></tr>
 <tr><td><b>Community only when the creator says so</b></td><td>The model is told to return nothing unless the description mentions a group, and the server double-checks with a keyword match. An empty Telegram group on day one hurts credibility.</td><td>Misses creators who'd happily start one.</td></tr>
 <tr><td><b>Regenerate per field, not just the whole page</b></td><td>Creators usually like most of the draft and dislike one line. Each field has its own ↻, which sends the current text and asks for a clearly different take. "Regenerate" at the bottom redoes everything.</td><td>Each regenerate is a full model call (simple, slightly wasteful).</td></tr>
-<tr><td><b>No login; an edit token in the browser</b></td><td>Sign-up before value is where creators drop off. The first browser to publish a link claims it with a random token; only that token can change or remove it.</td><td>Clearing browser data or switching phones loses edit access.</td></tr>
 <tr><td><b>Preview and public page share one component</b></td><td>What the creator sees while editing is exactly what a buyer gets: tap a product, read the description, open its page, press "Book now". Link-preview tags make a WhatsApp share show the creator's name and bio.</td><td>None worth noting.</td></tr>
 </table>
 
@@ -132,7 +131,6 @@
 <ul>
   <li><b>Reading Instagram profiles:</b> scraping is against Instagram's terms, and the official route (Business Discovery) needs Meta app review; covered above.</li>
   <li><b>Payments, checkout and booking calendars:</b> the brief says they're optional, and SuperProfile already has them. The buttons lead to the product page, which is where they'd plug in.</li>
-  <li><b>Accounts:</b> they would slow the first session, which is what this product exists to speed up.</li>
   <li><b>Hindi / Hinglish output:</b> high value for this audience, but needs a set of test cases to check quality. First thing in the next two weeks.</li>
   <li><b>Courses, ebooks and AI-made files:</b> the creator can't sell what doesn't exist yet. Generating a whole ebook would mean low-quality content under their name.</li>
   <li><b>Analytics:</b> useful after there is traffic; it doesn't help a creator get to their first publish.</li>

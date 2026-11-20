@@ -42,7 +42,6 @@ Open http://localhost:3000. Use the reset button in the sidebar to clear the sav
 
 ## Notes
 
-- No login: ownership is an edit token kept in the creator's browser.
 - No payments: "Book now" and "Get it" open the product page but don't take money.
 - API keys are read from environment variables only; `.env` is gitignored.
 - Built with Claude Code as the main coding tool (see the decision doc).
